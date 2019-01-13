@@ -164,6 +164,14 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
         }, 30);
     }
 
+    getTextLength() {
+        if (this.state.selectedItem == undefined) {
+            return 0;
+        }
+
+        return this.state.selectedItem.name.length;
+    }
+
     render() {
         return (
             <View
@@ -207,6 +215,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                         height="30"
                         fill="black"
                     />
+                    <Text fontWeight={'bold'} fontSize={22} x={-(this.getTextLength() / 2) * 10} y={0}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</Text>
                 </Svg>
                 <RNText style={{fontSize: 20, fontWeight: 'bold'}}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</RNText>
                 <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
