@@ -237,7 +237,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
 
                     <Rect
                         x="-3"
-                        y="-205"
+                        y={-(this.state.screenWidth / 2) - 3}
                         width="7"
                         height="30"
                         fill="black"
