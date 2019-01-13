@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList, Text, View, TouchableOpacity} from 'react-native';
 import {NavigationScreenProps} from 'react-navigation';
 import { Wheel } from '../models/wheel';
 
@@ -121,11 +121,27 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
     render() {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>Home</Text>
                 <FlatList
+                    style={{marginTop: 10}}
                     data={this.state.wheels}
                     keyExtractor={(item, index) => index.toString()}
-                    renderItem={(i: any) => <Text onPress={() => this.props.navigation.navigate('Wheel', {wheel: i.item})}>{i.item.name}</Text>}
+                    renderItem={(i: any) => 
+                        
+                        <TouchableOpacity 
+                            style={{ 
+                                width: 300, 
+                                height: 50, 
+                                backgroundColor: 'white', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                marginBottom: 10,
+                                borderRadius: 25,
+                                borderColor: 'black',
+                                borderWidth: 5
+                            }}
+                            onPress={() => {this.props.navigation.navigate('Wheel', {wheel: i.item})}}>
+                            <Text>{i.item.name}</Text>
+                        </TouchableOpacity>}
                 />
             </View>
         );

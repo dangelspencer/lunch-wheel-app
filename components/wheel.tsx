@@ -42,10 +42,20 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             items: [], 
             screenWidth: Math.floor(props.screenWidth)
         };
+
+        this.intervalReference = 0;
     }
+
+    private intervalReference: number;
 
     componentDidMount() {
         this.loadItems(this.props.items);
+    }
+
+    componentWillUnmount() {
+        if (this.intervalReference != 0) {
+            clearInterval(this.intervalReference);
+        }
     }
 
     loadItems(items: WheelItem[]) {
@@ -148,7 +158,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             selectedItem: undefined
         });
 
-        let interval = setInterval(() => {
+        this.intervalReference = setInterval(() => {
             if (this.state.spinSpeed < 0.1) {
                 this.setState({
                     ...this.state,
@@ -156,7 +166,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
                     spinSpeed: 0
                 });
 
-                clearInterval(interval);
+                clearInterval(this.intervalReference);
                 this.determineItem();
             }
 
@@ -194,12 +204,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
 
     render() {
         return (
-            <View
-                style={[
-                    StyleSheet.absoluteFill,
-                    { alignItems: 'center' },
-
-                ]}>
+            <>
                 <Svg 
                     height={this.state.screenWidth} 
                     width={this.state.screenWidth} 
@@ -245,7 +250,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
                 </Svg>
                 <RNText style={{fontSize: 20, fontWeight: 'bold'}}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</RNText>
                 <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
-            </View>
+            </>
         );
     }
 }
