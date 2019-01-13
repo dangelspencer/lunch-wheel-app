@@ -1,7 +1,20 @@
-import Canvas from 'react-native-canvas';
+import * as _ from 'lodash';
 import React from 'react';
+import { Button, StyleSheet, Text as RNText, View } from 'react-native';
+import Svg, { Circle, G, Path, Rect, Text } from 'react-native-svg';
 import {WheelItem} from '../models/wheelItem';
-import {Button, Text, View} from "react-native";
+
+interface ExtendedWheelItem {
+    id: string;
+    name: string;
+    displayName: string;
+    weight: number;
+    color: string;
+    startDegree: number;
+    endDegree: number;
+    textX: number;
+    textY: number;
+}
 
 interface WheelProps {
     items: WheelItem[];
@@ -9,164 +22,153 @@ interface WheelProps {
 }
 
 interface WheelState {
+    degrees: number; 
+    spinning: boolean; 
+    spinSpeed: number; 
+    items: ExtendedWheelItem[]; 
+    selectedItem?: ExtendedWheelItem; 
+    weightedDegrees?: number;
     screenWidth: number;
-    selectedItem?: WheelItem;
 }
-
 
 export class Wheel extends React.Component<WheelProps, WheelState> {
     constructor(props: WheelProps) {
         super(props);
 
         this.state = {
-            screenWidth: this.props.screenWidth
+            degrees: 0,
+            spinning: false,
+            spinSpeed: 0,
+            items: [], 
+            screenWidth: Math.floor(props.screenWidth)
         };
     }
 
-    private ctx: any;
-    private spinning: boolean = false;
-    private startAngle: number = Math.random() * 2 * Math.PI;
-    private spinTimeout: any;
-
     componentDidMount() {
-        this.drawWheel();
+        this.loadItems(this.props.items);
     }
 
-    handleCanvas = (canvas: any) => {
-        this.ctx = canvas.getContext('2d');
-    } 
+    loadItems(items: WheelItem[]) {
+        const totalWeight = _.sumBy(items, 'weight');
+        const itemsWithoutColors = _.filter(items, item => {
+            return item.color == null || item.color === '';
+        });
 
-    drawWheel() {
-        if (this.ctx != null) {
+        const numItemsWithoutColors = itemsWithoutColors.length;
+        let currentItemWithoutColor = 0;
 
-            // get max height and width for wheel
-            const height = this.state.screenWidth;
-            const width = this.state.screenWidth;
+        const weightedDegrees = 360 / totalWeight;
+        let startDegree = 0;
 
+        const newItems: ExtendedWheelItem[] = [];
 
-            this.ctx.clearRect(0, 0, width, height);
-            this.ctx.canvas.height = height;
-            this.ctx.canvas.width = width;
+        const maxTextLength = Math.floor((this.state.screenWidth / 2 - 5) / 13);
 
-            // configure constants for drawing
-            const center = width / 2;
-            const outsideRadius = width / 2 - 10;
-            const insideRadius = outsideRadius / 2;
-            const textRadius = outsideRadius - 75;
+        _.each(items, item => {
+            const itemDisplayName = item.name.length < maxTextLength ? item.name : item.name.substr(0, maxTextLength - 3) + '...'; 
 
-            let angle = this.startAngle;
-            if (this.props.items) {
-                let totalWeight = 0;
-                for (let i = 0; i < this.props.items.length; i++) {
-                    totalWeight += this.props.items[i].weight;
-                }
-                const weightedArc = 2 * Math.PI / totalWeight;
-                const weightedDegrees = 360 / totalWeight;
+            const newItem: ExtendedWheelItem = {
+                ...item,
+                color: item.color === null ? '' : item.color,
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0, 
+                textY: 0,
+                displayName: itemDisplayName
+            };
+            newItem.startDegree = startDegree;
+            newItem.endDegree = newItem.startDegree + (item.weight * weightedDegrees);
+            startDegree = newItem.endDegree;
 
-                for (let i = 0; i < this.props.items.length; i++) {
-                    this.props.items[i].arc = weightedArc * this.props.items[i].weight;
-                    this.props.items[i].degrees = weightedDegrees * this.props.items[i].weight;
-                }
+            const textLocation = this.polarToCartesian(0, 0, this.state.screenWidth * 0.12, (newItem.startDegree + (newItem.endDegree - newItem.startDegree) / 2) + 6);
+            newItem.textX = textLocation.x;
+            newItem.textY = textLocation.y;
 
-                for (let i = 0; i < this.props.items.length; i++) {
-                    const item = this.props.items[i];
-
-                    if (item.arc) {
-                        this.ctx.fillStyle = this.getColor(i, this.props.items.length);
-                        this.ctx.beginPath();
-                        this.ctx.arc((center), (center), outsideRadius, angle, angle + item.arc, false);
-                        this.ctx.arc((center), (center), insideRadius, angle + item.arc, angle, true);
-                        this.ctx.stroke();
-                        this.ctx.fill();
-                
-                        this.ctx.save();
-                        this.ctx.shadowOffsetX = -1;
-                        this.ctx.shadowOffsetY = -1;
-                        this.ctx.shadowBlur = 0;
-                        this.ctx.fillStyle = "white";
-                        this.ctx.translate((center) + Math.cos(angle + item.arc / 2) * textRadius, (center) + Math.sin(angle + item.arc / 2) * textRadius);
-                        this.ctx.rotate(angle + item.arc / 2 - 2 * Math.PI);
-                        const text = item.name;
-                        this.ctx.fillText(text, -this.ctx.measureText(text).width / 2, 0);
-                        this.ctx.restore();
-                
-                        angle += item.arc;
-                    }
-                }
+            if (newItem.color === '') {
+                newItem.color = this.getColor(currentItemWithoutColor, numItemsWithoutColors);
+                currentItemWithoutColor++;
             }
-            
-            // draw arrow
-            this.ctx.fillStyle = "black";
-            this.ctx.beginPath();
-            this.ctx.moveTo((center) - 4, (center - 5) - center + 10);
-            this.ctx.lineTo((center) + 4, (center - 5) - center + 10);
-            this.ctx.lineTo((center) + 4, (center + 5) - center + 10);
-            this.ctx.lineTo((center) + 9, (center + 5) - center + 10);
-            this.ctx.lineTo((center) + 0, (center + 13) - center + 10);
-            this.ctx.lineTo((center) - 9, (center + 5) - center + 10);
-            this.ctx.lineTo((center) - 4, (center + 5) - center + 10);
-            this.ctx.lineTo((center) - 4, (center - 5) - center + 10);
-            this.ctx.fill();
+
+            newItems.push(newItem);
+        });
+
+        this.setState({
+            ...this.state,
+            items: newItems,
+            weightedDegrees: weightedDegrees,
+        })
+    }
+
+    determineItem() {
+        const finalDegree = 360 - (this.state.degrees % 360);
+        for (const item of this.state.items) {
+            if (finalDegree > item.startDegree && finalDegree <= item.endDegree) {
+                this.setState({
+                    ...this.state,
+                    selectedItem: item,
+                    degrees: this.state.degrees % 360
+                });
+            }
         }
+    }
+
+    polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
+        var angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
+    }
+
+    describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
+        var start = this.polarToCartesian(x, y, radius, endAngle);
+        var end = this.polarToCartesian(x, y, radius, startAngle);
+
+        var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+        return [
+            "M", start.x, start.y,
+            "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+            'L', 0, 0
+        ].join(" ");
     }
 
     spin() {
-        if (this.spinning) {
-          return;
+        if (this.state.spinning) {
+            return;
         }
+
+        const speed = Math.floor(Math.random() * 60 + 30);
         this.setState({
             ...this.state,
+            degrees: this.state.degrees + speed,
+            spinning: true,
+            spinSpeed: speed,
             selectedItem: undefined
         });
-    
-        const spinAngleStart = Math.random() * 10 + 30;
-        const spinTime = 0;
-        const spinTimeTotal = 1 + Math.floor((Math.random() * 10 + 1) * 1000);
-        this.spinning = true;
-        this.rotateWheel(spinAngleStart, spinTime, spinTimeTotal);
-      }
-    
-      rotateWheel(spinAngleStart: number, spinTime: number, spinTimeTotal: number) {
-        spinTime += 30;
-        if (spinTime >= spinTimeTotal) {
-          this.stopRotateWheel();
-          this.spinning = false;
-          return;
-        }
-        const spinAngle = spinAngleStart - this.easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-        this.startAngle += (spinAngle * Math.PI / 180);
-        this.drawWheel();
-        this.spinTimeout = setTimeout(() => { this.rotateWheel(spinAngleStart, spinTime, spinTimeTotal) }, 60);
-      }
-    
-      stopRotateWheel() {
-        clearInterval(this.spinTimeout);
-        const degrees = 360 - (this.startAngle * 180 / Math.PI + 90) % 360;
-    
-        let currentDegree = 0;
-        for (let i = 0; i <= this.props.items.length; i++) {
-          currentDegree += this.props.items[i].degrees
-          if (currentDegree >= degrees) {
+
+        let interval = setInterval(() => {
+            if (this.state.spinSpeed < 0.1) {
+                this.setState({
+                    ...this.state,
+                    spinning: false,
+                    spinSpeed: 0
+                });
+
+                clearInterval(interval);
+                this.determineItem();
+            }
+
+            const newSpeed = this.state.spinSpeed - (this.state.spinSpeed * 0.02);
+            const newDegrees = this.state.degrees + newSpeed
             this.setState({
                 ...this.state,
-                selectedItem: this.props.items[i]
+                degrees: newDegrees,
+                spinSpeed: newSpeed
             });
-            break;
-          }
-        }
-    
-        // this.ctx.save();
-        // this.ctx.font = 'bold 30px sans-serif';
-        // var text = restarauntName;
-        // this.ctx.fillText(text, (this.center * this.sizeModifier) - this.ctx.measureText(text).width / 2, (this.center * this.sizeModifier) + 10);
-        // this.ctx.restore();
-      }
-    
-      easeOut(t: number, b: number, c: number, d: number) {
-        var ts = (t /= d) * t;
-        var tc = ts * t;
-        return b + c * (tc + -3 * ts + 3 * t);
-      }
+        }, 30);
+    }
 
     byte2Hex(n: number) {
         var nybHexString = "0123456789ABCDEF";
@@ -192,18 +194,60 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
 
     render() {
         return (
-            <>
-                <Canvas ref={this.handleCanvas} />
-                <View style={{flex: 1, alignItems: 'center' }}>
-                    <Button
-                        onPress={() => {
-                            this.spin();
-                        }}
-                        title="Spin Wheel"
+            <View
+                style={[
+                    StyleSheet.absoluteFill,
+                    { alignItems: 'center' },
+
+                ]}>
+                <Svg 
+                    height={this.state.screenWidth} 
+                    width={this.state.screenWidth} 
+                    viewBox={`${-(this.state.screenWidth / 2)} ${-(this.state.screenWidth / 2)} ${this.state.screenWidth} ${this.state.screenWidth}`}>
+                    <G 
+                        transform={`rotate(${this.state.degrees}, 0, 0)`}>
+                        {this.state.items.map((element, index) =>
+                            <G 
+                                key={index}>
+                                <Path
+                                    d={this.describeArc(0, 0, (this.state.screenWidth / 2) - 5, element.startDegree, element.endDegree)} fill={element.color}
+                                    stroke="black"
+                                    strokeWidth="2.5"
+                                ></Path>
+                                <Text
+                                    x={element.textX}
+                                    y={element.textY}
+                                    fill="black"
+                                    fontWeight={'bold'}
+                                    fontSize={18}
+                                    transform={`rotate(${(element.startDegree + (element.endDegree - element.startDegree) / 2) - 90}, ${element.textX}, ${element.textY})`}
+                                >{element.displayName}</Text>
+                            </G>
+                        )}
+
+                        <Circle
+                            cx="0"
+                            cy="0"
+                            r={this.state.screenWidth * 0.1}
+                            stroke="black"
+                            strokeWidth="2.5"
+                            fill="white"
+                        />
+                    </G>
+
+                    <Rect
+                        x="-3"
+                        y="-205"
+                        width="7"
+                        height="30"
+                        fill="black"
                     />
-                    {this.state.selectedItem != null ? <Text>Selected Item: {this.state.selectedItem.name}</Text> : <></>}
-                </View>
-            </>
-        )
+                </Svg>
+                <RNText style={{fontSize: 20, fontWeight: 'bold'}}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</RNText>
+                <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
+            </View>
+        );
     }
 }
+
+// 15 characters for default radius

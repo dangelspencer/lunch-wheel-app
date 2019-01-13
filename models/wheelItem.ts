@@ -1,8 +1,6 @@
 export interface WheelItem {
-    id?: String;
-    name: String;
+    id: string;
+    name: string;
     weight: number;
-    color?: String;
-    arc?: number;
-    degrees?: number;
+    color: string | null;
 }
