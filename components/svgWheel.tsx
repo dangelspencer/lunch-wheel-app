@@ -2,7 +2,8 @@ import Svg, {
     Circle,
     G,
     Text,
-    Path
+    Path,
+    Rect
 } from 'react-native-svg';
 
 import * as _ from 'lodash';
@@ -10,7 +11,6 @@ import React from 'react';
 import { Button, View, StyleSheet } from 'react-native';
 
 export class SVGWheel extends React.Component<{}, { degrees: number, spinning: boolean, spinSpeed: number, items: any[], selectedItem?: any }> {
-
     constructor(props: any) {
         super(props);
 
@@ -71,8 +71,6 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             const textLocation = this.polarToCartesian(0, 0, 115, item.startDegree + (item.endDegree - item.startDegree) / 2);
             item.textX = textLocation.x;
             item.textY = textLocation.y;
-
-            console.log(item);
         });
 
         this.state = {
@@ -86,17 +84,14 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
     private weightedDegrees: number = 0;
 
     determineItem() {
-        console.log(this.state.degrees);
-        console.log(this.state.degrees % 360);
         const finalDegree = 360 - (this.state.degrees % 360);
         for (const item of this.state.items) {
             if (finalDegree > item.startDegree && finalDegree <= item.endDegree) {
                 this.setState({
                     ...this.state,
-                    selectedItem: item
+                    selectedItem: item,
+                    degrees: this.state.degrees % 360
                 });
-                console.log('selected item:');
-                console.log(item);
             }
         }
     }
@@ -140,7 +135,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
         });
 
         let interval = setInterval(() => {
-            if (this.state.spinSpeed < 0.5) {
+            if (this.state.spinSpeed < 0.1) {
                 this.setState({
                     ...this.state,
                     spinning: false,
@@ -182,7 +177,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                                     x={element.textX}
                                     y={element.textY}
                                     fill="black"
-                                    transform={`rotate(${((element.startDegree - element.endDegree) / 2) + element.startDegree}, ${element.textX}, ${element.textY})`}
+                                    transform={`rotate(${(element.startDegree + (element.endDegree - element.startDegree) / 2) - 90}, ${element.textX}, ${element.textY})`}
                                 >{element.name}</Text>
                             </G>
                         )}
@@ -198,6 +193,13 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                     </G>
 
                     <Text x={0} y={0}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</Text>
+                    <Rect
+                        x="-3"
+                        y="-205"
+                        width="7"
+                        height="30"
+                        fill="black"
+                    />
                 </Svg>
                 <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
             </View>
