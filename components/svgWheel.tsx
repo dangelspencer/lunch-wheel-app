@@ -8,7 +8,7 @@ import Svg, {
 
 import * as _ from 'lodash';
 import React from 'react';
-import { Button, View, StyleSheet } from 'react-native';
+import { Button, View, StyleSheet, Text as RNText } from 'react-native';
 
 export class SVGWheel extends React.Component<{}, { degrees: number, spinning: boolean, spinSpeed: number, items: any[], selectedItem?: any }> {
     constructor(props: any) {
@@ -51,6 +51,14 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                 name: 'DiBella\'s',
                 weight: 1,
                 color: 'purple',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }, {
+                name: 'Buffalo Wild Wings',
+                weight: 1,
+                color: 'gray',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -192,7 +200,6 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                         />
                     </G>
 
-                    <Text x={0} y={0}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</Text>
                     <Rect
                         x="-3"
                         y="-205"
@@ -201,6 +208,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                         fill="black"
                     />
                 </Svg>
+                <RNText style={{fontSize: 20, fontWeight: 'bold'}}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</RNText>
                 <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
             </View>
         );
