@@ -1,44 +1,105 @@
 import Svg, {
     Circle,
-    Ellipse,
     G,
     Text,
-    TSpan,
-    TextPath,
-    Path,
-    Polygon,
-    Polyline,
-    Line,
-    Rect,
-    Use,
-    Image,
-    Symbol,
-    Defs,
-    LinearGradient,
-    RadialGradient,
-    Stop,
-    ClipPath,
-    Pattern,
-    Mask,
+    Path
 } from 'react-native-svg';
 
 import * as _ from 'lodash';
 import React from 'react';
 import { Button, View, StyleSheet } from 'react-native';
 
-export class SVGWheel extends React.Component<{}, { degrees: number, spinning: boolean, spinSpeed: number }> {
+export class SVGWheel extends React.Component<{}, { degrees: number, spinning: boolean, spinSpeed: number, items: any[], selectedItem?: any }> {
 
     constructor(props: any) {
         super(props);
 
+        const items = [
+            {
+                name: 'Skyline',
+                weight: 1,
+                color: 'green',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }, {
+                name: 'Chipotle',
+                weight: 1,
+                color: 'blue',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }, {
+                name: 'Basil Thai',
+                weight: 1,
+                color: 'yellow',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }, {
+                name: 'Smashburger',
+                weight: 1,
+                color: 'red',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }, {
+                name: 'DiBella\'s',
+                weight: 1,
+                color: 'purple',
+                startDegree: 0,
+                endDegree: 0,
+                textX: 0,
+                textY: 0
+            }
+        ];
+
+        const totalWeight = _.sumBy(items, 'weight');
+
+        this.weightedDegrees = 360 / totalWeight;
+        let startDegree = 0;
+
+        _.each(items, item => {
+            item.startDegree = startDegree;
+            item.endDegree = item.startDegree + (item.weight * this.weightedDegrees);
+            startDegree = item.endDegree;
+
+            const textLocation = this.polarToCartesian(0, 0, 115, item.startDegree + (item.endDegree - item.startDegree) / 2);
+            item.textX = textLocation.x;
+            item.textY = textLocation.y;
+
+            console.log(item);
+        });
+
         this.state = {
             degrees: 0,
             spinning: false,
-            spinSpeed: 0
+            spinSpeed: 0,
+            items: items
         };
     }
 
-    private spinTimeout: any;
+    private weightedDegrees: number = 0;
+
+    determineItem() {
+        console.log(this.state.degrees);
+        console.log(this.state.degrees % 360);
+        const finalDegree = 360 - (this.state.degrees % 360);
+        for (const item of this.state.items) {
+            if (finalDegree > item.startDegree && finalDegree <= item.endDegree) {
+                this.setState({
+                    ...this.state,
+                    selectedItem: item
+                });
+                console.log('selected item:');
+                console.log(item);
+            }
+        }
+    }
 
     polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
         var angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
@@ -68,17 +129,18 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
         if (this.state.spinning) {
             return;
         }
-        
-        const speed = 30;
+
+        const speed = Math.floor(Math.random() * 60 + 30);
         this.setState({
             ...this.state,
             degrees: this.state.degrees + speed,
             spinning: true,
-            spinSpeed: speed
+            spinSpeed: speed,
+            selectedItem: undefined
         });
 
         let interval = setInterval(() => {
-            if (this.state.spinSpeed < 1) {
+            if (this.state.spinSpeed < 0.5) {
                 this.setState({
                     ...this.state,
                     spinning: false,
@@ -86,51 +148,20 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                 });
 
                 clearInterval(interval);
+                this.determineItem();
             }
 
             const newSpeed = this.state.spinSpeed - (this.state.spinSpeed * 0.02);
+            const newDegrees = this.state.degrees + newSpeed
             this.setState({
                 ...this.state,
-                degrees: this.state.degrees + newSpeed,
+                degrees: newDegrees,
                 spinSpeed: newSpeed
             });
-            console.log(this.state.degrees);
         }, 30);
     }
 
     render() {
-
-        const items: any[] = [
-            {
-                name: 'Skyline',
-                weight: 1,
-                color: 'green'
-            }, {
-                name: 'Chipotle',
-                weight: 1,
-                color: 'blue'
-            }, {
-                name: 'Basil Thai',
-                weight: 1,
-                color: 'yellow'
-            }, {
-                name: 'Smashburger',
-                weight: 1,
-                color: 'red'
-            }
-        ];
-
-        const totalWeight = _.sumBy(items, 'weight');
-
-        const weightedDegrees = 360 / totalWeight;
-        let startDegree = 0;
-
-        _.each(items, item => {
-            item.startDegree = startDegree;
-            item.endDegree = item.startDegree + (item.weight * weightedDegrees);
-            startDegree = item.endDegree;
-        });
-
         return (
             <View
                 style={[
@@ -138,18 +169,35 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                     { alignItems: 'center' },
                 ]}>
                 <Svg height={410} width={410} viewBox="-205 -205 410 410">
-                    {items.map((element, index) =>
-                        <Path key={index} d={this.describeArc(0, 0, 200, element.startDegree, element.endDegree)} fill={element.color} stroke="black" strokeWidth="2.5" transform={`rotate(${this.state.degrees}, 0, 0)`}></Path>
-                    )}
-                    <Circle
-                        cx="0"
-                        cy="0"
-                        r="125"
-                        stroke="black"
-                        strokeWidth="2.5"
-                        fill="white"
-                        transform={`rotate(${this.state.degrees}, 0, 0)`}
-                    />
+                    <G transform={`rotate(${this.state.degrees}, 0, 0)`}>
+                        {this.state.items.map((element, index) =>
+                            <G 
+                                key={index}>
+                                <Path
+                                    d={this.describeArc(0, 0, 200, element.startDegree, element.endDegree)} fill={element.color}
+                                    stroke="black"
+                                    strokeWidth="2.5"
+                                ></Path>
+                                <Text
+                                    x={element.textX}
+                                    y={element.textY}
+                                    fill="black"
+                                    transform={`rotate(${((element.startDegree - element.endDegree) / 2) + element.startDegree}, ${element.textX}, ${element.textY})`}
+                                >{element.name}</Text>
+                            </G>
+                        )}
+
+                        <Circle
+                            cx="0"
+                            cy="0"
+                            r="110"
+                            stroke="black"
+                            strokeWidth="2.5"
+                            fill="white"
+                        />
+                    </G>
+
+                    <Text x={0} y={0}>{this.state.selectedItem === undefined ? '' : this.state.selectedItem.name}</Text>
                 </Svg>
                 <Button onPress={() => this.spin()} title="Spin Wheel"></Button>
             </View>
