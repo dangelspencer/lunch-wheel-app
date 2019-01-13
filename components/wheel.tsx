@@ -221,7 +221,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
                                     fontWeight={'bold'}
                                     fontSize={18}
                                     transform={`rotate(${(element.startDegree + (element.endDegree - element.startDegree) / 2) - 90}, ${element.textX}, ${element.textY})`}
-                                >{element.displayName}</Text>
+                                >{Math.abs(element.endDegree - element.startDegree) > 30 ? element.displayName : ''}</Text>
                             </G>
                         )}
 

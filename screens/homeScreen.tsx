@@ -1,79 +1,133 @@
 import React from 'react';
-import {Button, Text, View} from "react-native";
-import {NavigationScreenProps} from "react-navigation";
-import {Wheel} from '../components/wheel';
-import { WheelItem } from '../models/wheelItem';
+import {FlatList, Text, View} from 'react-native';
+import {NavigationScreenProps} from 'react-navigation';
+import { Wheel } from '../models/wheel';
 
 interface HomeState {
-    screeWidth: number;
+    wheels: Wheel[];
 }
 
 export class HomeScreen extends React.Component<NavigationScreenProps, HomeState> {
     static navigationOptions = {
-        title: "Home"
+        title: 'Wheels'
     };
 
     constructor(props: NavigationScreenProps) {
         super(props);
 
-        this.state = {screeWidth: 0};
-    }
-
-    setViewDetails(event: any) {
-        const {width} = event.nativeEvent.layout;
-        this.setState({screeWidth: width});
+        this.state = {
+            wheels: [
+                {
+                    name: 'Test Wheel 1',
+                    items: [
+                        {
+                            id: '',
+                            name: 'Skyline',
+                            weight: 1,
+                            color: null
+                        }, {
+                            id: '',
+                            name: 'Chipotle',
+                            weight: 1,
+                            color: null
+                        }, {
+                            id: '',
+                            name: 'Basil Thai',
+                            weight: 1,
+                            color: null
+                        }, {
+                            id: '',
+                            name: 'Smashburger',
+                            weight: 1,
+                            color: null
+                        }, {
+                            id: '',
+                            name: 'Dibella\'s',
+                            weight: 1,
+                            color: ''
+                        }, {
+                            id: '',
+                            name: 'Buffalo Wild Wings',
+                            weight: 1,
+                            color: ''
+                        }
+                    ]
+                }, {
+                    name: 'Test Wheel 2',
+                    items: [
+                        {
+                            id: '',
+                            name: 'Skyline',
+                            weight: 1,
+                            color: 'red'
+                        }, {
+                            id: '',
+                            name: 'Chipotle',
+                            weight: 1,
+                            color: 'blue'
+                        }, {
+                            id: '',
+                            name: 'Basil Thai',
+                            weight: 1,
+                            color: 'green'
+                        }, {
+                            id: '',
+                            name: 'Smashburger',
+                            weight: 1,
+                            color: 'grey'
+                        }, {
+                            id: '',
+                            name: 'Dibella\'s',
+                            weight: 1,
+                            color: 'white'
+                        }, {
+                            id: '',
+                            name: 'Buffalo Wild Wings',
+                            weight: 1,
+                            color: 'yellow'
+                        }
+                    ]
+                }, {
+                    name: 'Big Wheel',
+                    items: [
+                        { id: '', color: '', name: "Basil Thai", weight: 4 },
+                        { id: '', color: '', name: "Skyline", weight: 5 },
+                        { id: '', color: '', name: "Qdoba", weight: 3 },
+                        { id: '', color: '', name: "Mio's", weight: 4 },
+                        { id: '', color: '', name: "El Vaquero", weight: 2 },
+                        { id: '', color: '', name: "Dibella's", weight: 3 },
+                        { id: '', color: '', name: "Brickhouse", weight: 1 },
+                        { id: '', color: '', name: "B Dubs", weight: 2 },
+                        { id: '', color: '', name: "Chipolte", weight: 2 },
+                        { id: '', color: '', name: "City Barbecue", weight: 3 },
+                        { id: '', color: '', name: "DeSha's", weight: 1 },
+                        { id: '', color: '', name: "Silver Spring House", weight: 1 },
+                        { id: '', color: '', name: "Penn Station", weight: 1 },
+                        { id: '', color: '', name: "Slatts", weight: 2 },
+                        { id: '', color: '', name: "Montgomery Towne Tavern", weight: 2 },
+                        { id: '', color: '', name: "Firehouse", weight: 1 },
+                        { id: '', color: '', name: "Marion's", weight: 2 },
+                        { id: '', color: '', name: "LaRosa's", weight: 1 },
+                        { id: '', color: '', name: "Envision", weight: 1 },
+                        { id: '', color: '', name: "Korea House", weight: 1 },
+                        { id: '', color: '', name: "Dolsot", weight: 1 },
+                        { id: '', color: '', name: "Blue Goose", weight: 2 }
+                    ]
+                }
+            ]
+        };
     }
 
     render() {
-        const items: WheelItem[] = [
-            {
-                id: '',
-                name: 'Skyline',
-                weight: 1,
-                color: null
-            }, {
-                id: '',
-                name: 'Chipotle',
-                weight: 1,
-                color: null
-            }, {
-                id: '',
-                name: 'Basil Thai',
-                weight: 1,
-                color: null
-            }, {
-                id: '',
-                name: 'Smashburger',
-                weight: 1,
-                color: null
-            }, {
-                id: '',
-                name: 'Dibella\'s',
-                weight: 1,
-                color: ''
-            }, {
-                id: '',
-                name: 'Buffalo Wild Wings',
-                weight: 1,
-                color: ''
-            }
-        ];
-
-        if (this.state.screeWidth > 0) {
-            return (
-                <View style={{ flex: 1, alignItems: 'center' }} onLayout={(event) => this.setViewDetails(event)}>
-                    <Wheel items={items} screenWidth={this.state.screeWidth}></Wheel>
-                </View>
-            );
-        } 
-
         return (
-            <>
-                <View style={{ flex: 1, alignItems: 'center' }} onLayout={(event) => this.setViewDetails(event)}>
-                    <Text>Lunch Wheel</Text>
-                    <Text>Width {this.state.screeWidth}</Text>
-                </View>
-            </>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>Home</Text>
+                <FlatList
+                    data={this.state.wheels}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={(i: any) => <Text onPress={() => this.props.navigation.navigate('Wheel', {wheel: i.item})}>{i.item.name}</Text>}
+                />
+            </View>
         );
     }
 }
