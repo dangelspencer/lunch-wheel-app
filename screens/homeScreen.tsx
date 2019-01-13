@@ -24,22 +24,22 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
                             id: '',
                             name: 'Skyline',
                             weight: 1,
-                            color: null
+                            color: ''
                         }, {
                             id: '',
                             name: 'Chipotle',
                             weight: 1,
-                            color: null
+                            color: ''
                         }, {
                             id: '',
                             name: 'Basil Thai',
                             weight: 1,
-                            color: null
+                            color: ''
                         }, {
                             id: '',
                             name: 'Smashburger',
                             weight: 1,
-                            color: null
+                            color: ''
                         }, {
                             id: '',
                             name: 'Dibella\'s',
@@ -58,7 +58,7 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
                         {
                             id: '',
                             name: 'Skyline',
-                            weight: 1,
+                            weight: 2,
                             color: 'red'
                         }, {
                             id: '',
@@ -68,7 +68,7 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
                         }, {
                             id: '',
                             name: 'Basil Thai',
-                            weight: 1,
+                            weight: 2,
                             color: 'green'
                         }, {
                             id: '',
@@ -78,7 +78,7 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
                         }, {
                             id: '',
                             name: 'Dibella\'s',
-                            weight: 1,
+                            weight: 2,
                             color: 'white'
                         }, {
                             id: '',
@@ -93,25 +93,37 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
                         { id: '', color: '', name: "Basil Thai", weight: 4 },
                         { id: '', color: '', name: "Skyline", weight: 5 },
                         { id: '', color: '', name: "Qdoba", weight: 3 },
-                        { id: '', color: '', name: "Mio's", weight: 4 },
+                        { id: '', color: '', name: "Mio's", weight: 5 },
                         { id: '', color: '', name: "El Vaquero", weight: 2 },
                         { id: '', color: '', name: "Dibella's", weight: 3 },
                         { id: '', color: '', name: "Brickhouse", weight: 1 },
-                        { id: '', color: '', name: "B Dubs", weight: 2 },
+                        { id: '', color: '', name: "Buffalo Wild Wings", weight: 2 },
                         { id: '', color: '', name: "Chipolte", weight: 2 },
                         { id: '', color: '', name: "City Barbecue", weight: 3 },
                         { id: '', color: '', name: "DeSha's", weight: 1 },
                         { id: '', color: '', name: "Silver Spring House", weight: 1 },
                         { id: '', color: '', name: "Penn Station", weight: 1 },
                         { id: '', color: '', name: "Slatts", weight: 2 },
-                        { id: '', color: '', name: "Montgomery Towne Tavern", weight: 2 },
+                        { id: '', color: '', name: "Montgomery Towne Tavern", weight: 5 },
                         { id: '', color: '', name: "Firehouse", weight: 1 },
                         { id: '', color: '', name: "Marion's", weight: 2 },
                         { id: '', color: '', name: "LaRosa's", weight: 1 },
                         { id: '', color: '', name: "Envision", weight: 1 },
                         { id: '', color: '', name: "Korea House", weight: 1 },
                         { id: '', color: '', name: "Dolsot", weight: 1 },
-                        { id: '', color: '', name: "Blue Goose", weight: 2 }
+                        { id: '', color: '', name: "Blue Goose", weight: 4 }
+                    ]
+                }, {
+                    name: 'Demo Wheel',
+                    items: [
+                        {id: '', color: '', weight: 1, name: 'Basil Thai'},
+                        {id: '', color: '', weight: 1, name: 'Mio\'s'},
+                        {id: '', color: '', weight: 1, name: 'Dibella\'s'},
+                        {id: '', color: '', weight: 1, name: 'Qdoba'},
+                        {id: '', color: '', weight: 3, name: 'Buffalo Wild Wings'},
+                        {id: '', color: '', weight: 2, name: 'Montgomery Towne Tavern'},
+                        {id: '', color: '', weight: 1, name: 'City Barbeque'},
+                        {id: '', color: '', weight: 2, name: 'Blue Goose'}
                     ]
                 }
             ]

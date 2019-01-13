@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import React from 'react';
-import { Button, StyleSheet, Text as RNText, View } from 'react-native';
+import { Button, FlatList, Text as RNText, View } from 'react-native';
 import Svg, { Circle, G, Path, Rect, Text } from 'react-native-svg';
 import {WheelItem} from '../models/wheelItem';
 
@@ -27,7 +27,7 @@ interface WheelState {
     spinSpeed: number; 
     items: ExtendedWheelItem[]; 
     selectedItem?: ExtendedWheelItem; 
-    weightedDegrees?: number;
+    weightedDegrees: number;
     screenWidth: number;
 }
 
@@ -40,7 +40,8 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             spinning: false,
             spinSpeed: 0,
             items: [], 
-            screenWidth: Math.floor(props.screenWidth)
+            screenWidth: Math.floor(props.screenWidth),
+            weightedDegrees: 0
         };
 
         this.intervalReference = 0;
@@ -60,12 +61,6 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
 
     loadItems(items: WheelItem[]) {
         const totalWeight = _.sumBy(items, 'weight');
-        const itemsWithoutColors = _.filter(items, item => {
-            return item.color == null || item.color === '';
-        });
-
-        const numItemsWithoutColors = itemsWithoutColors.length;
-        let currentItemWithoutColor = 0;
 
         const weightedDegrees = 360 / totalWeight;
         let startDegree = 0;
@@ -93,11 +88,6 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             const textLocation = this.polarToCartesian(0, 0, this.state.screenWidth * 0.12, (newItem.startDegree + (newItem.endDegree - newItem.startDegree) / 2) + 6);
             newItem.textX = textLocation.x;
             newItem.textY = textLocation.y;
-
-            if (newItem.color === '') {
-                newItem.color = this.getColor(currentItemWithoutColor, numItemsWithoutColors);
-                currentItemWithoutColor++;
-            }
 
             newItems.push(newItem);
         });
@@ -180,28 +170,6 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
         }, 30);
     }
 
-    byte2Hex(n: number) {
-        var nybHexString = "0123456789ABCDEF";
-        return String(nybHexString.substr((n >> 4) & 0x0F, 1)) + nybHexString.substr(n & 0x0F, 1);
-    }
-
-    RGB2Color(r: number, g: number, b: number) {
-        return '#' + this.byte2Hex(r) + this.byte2Hex(g) + this.byte2Hex(b);
-    }
-
-    getColor(item: number, maxitem: number) {
-        const phase = 0;
-        const center = 128;
-        const width = 127;
-        const frequency = Math.PI * 2 / maxitem;
-
-        const red = Math.sin(frequency * item + 2 + phase) * width + center;
-        const green = Math.sin(frequency * item + 0 + phase) * width + center;
-        const blue = Math.sin(frequency * item + 4 + phase) * width + center;
-
-        return this.RGB2Color(red, green, blue);
-    }
-
     render() {
         return (
             <>
@@ -226,7 +194,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
                                     fontWeight={'bold'}
                                     fontSize={18}
                                     transform={`rotate(${(element.startDegree + (element.endDegree - element.startDegree) / 2) - 90}, ${element.textX}, ${element.textY})`}
-                                >{Math.abs(element.endDegree - element.startDegree) > 30 ? element.displayName : ''}</Text>
+                                >{Math.abs(element.endDegree - element.startDegree) > 360 - this.state.weightedDegrees - this.state.screenWidth * 0.82 ? element.displayName : ''}</Text>
                             </G>
                         )}
 
