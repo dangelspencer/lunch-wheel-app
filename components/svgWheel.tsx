@@ -18,7 +18,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             {
                 name: 'Skyline',
                 weight: 1,
-                color: 'green',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -26,7 +26,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             }, {
                 name: 'Chipotle',
                 weight: 1,
-                color: 'blue',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -34,7 +34,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             }, {
                 name: 'Basil Thai',
                 weight: 1,
-                color: 'yellow',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -42,7 +42,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             }, {
                 name: 'Smashburger',
                 weight: 1,
-                color: 'red',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -50,7 +50,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             }, {
                 name: 'DiBella\'s',
                 weight: 1,
-                color: 'purple',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -58,7 +58,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             }, {
                 name: 'Buffalo Wild Wings',
                 weight: 1,
-                color: 'gray',
+                color: '',
                 startDegree: 0,
                 endDegree: 0,
                 textX: 0,
@@ -67,6 +67,12 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
         ];
 
         const totalWeight = _.sumBy(items, 'weight');
+        const itemsWithoutColors = _.filter(items, item => {
+            return item.color == null || item.color === '';
+        });
+
+        const numItemsWithoutColors = itemsWithoutColors.length;
+        let currentItemWithoutColor = 0;
 
         this.weightedDegrees = 360 / totalWeight;
         let startDegree = 0;
@@ -79,6 +85,11 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
             const textLocation = this.polarToCartesian(0, 0, 115, item.startDegree + (item.endDegree - item.startDegree) / 2);
             item.textX = textLocation.x;
             item.textY = textLocation.y;
+
+            if (item.color == null || item.color === '') {
+                item.color = this.getColor(currentItemWithoutColor, numItemsWithoutColors);
+                currentItemWithoutColor++;
+            }
         });
 
         this.state = {
@@ -172,6 +183,28 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
         return this.state.selectedItem.name.length;
     }
 
+    byte2Hex(n: number) {
+        var nybHexString = "0123456789ABCDEF";
+        return String(nybHexString.substr((n >> 4) & 0x0F, 1)) + nybHexString.substr(n & 0x0F, 1);
+    }
+
+    RGB2Color(r: number, g: number, b: number) {
+        return '#' + this.byte2Hex(r) + this.byte2Hex(g) + this.byte2Hex(b);
+    }
+
+    getColor(item: number, maxitem: number) {
+        const phase = 0;
+        const center = 128;
+        const width = 127;
+        const frequency = Math.PI * 2 / maxitem;
+
+        const red = Math.sin(frequency * item + 2 + phase) * width + center;
+        const green = Math.sin(frequency * item + 0 + phase) * width + center;
+        const blue = Math.sin(frequency * item + 4 + phase) * width + center;
+
+        return this.RGB2Color(red, green, blue);
+    }
+
     render() {
         return (
             <View
@@ -193,6 +226,7 @@ export class SVGWheel extends React.Component<{}, { degrees: number, spinning: b
                                     x={element.textX}
                                     y={element.textY}
                                     fill="black"
+                                    fontWeight={'bold'}
                                     transform={`rotate(${(element.startDegree + (element.endDegree - element.startDegree) / 2) - 90}, ${element.textX}, ${element.textY})`}
                                 >{element.name}</Text>
                             </G>
