@@ -53,6 +53,10 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
         this.loadItems(this.props.items);
     }
 
+    componentWillReceiveProps(nextProps: WheelProps) {
+        this.loadItems(nextProps.items);
+    }
+
     componentWillUnmount() {
         if (this.intervalReference != 0) {
             clearInterval(this.intervalReference);
@@ -96,7 +100,9 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             ...this.state,
             items: newItems,
             weightedDegrees: weightedDegrees,
-        })
+            spinning: false,
+            degrees: 0
+        });
     }
 
     determineItem() {
@@ -139,7 +145,7 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
             return;
         }
 
-        const speed = Math.floor(Math.random() * 60 + 30);
+        const speed = Math.floor(Math.random() * 90 + 30);
         this.setState({
             ...this.state,
             degrees: this.state.degrees + speed,
@@ -177,13 +183,26 @@ export class Wheel extends React.Component<WheelProps, WheelState> {
                     height={this.state.screenWidth} 
                     width={this.state.screenWidth} 
                     viewBox={`${-(this.state.screenWidth / 2)} ${-(this.state.screenWidth / 2)} ${this.state.screenWidth} ${this.state.screenWidth}`}>
+
+                    { this.state.items.length === 1 &&
+                        <Circle 
+                            cx="0" 
+                            cy="0" 
+                            r={(this.state.screenWidth / 2) - 5} 
+                            fill={this.state.items[0].color} 
+                            stroke="black" 
+                            strokeWidth="2.5">
+                        </Circle> 
+                    }
+                    
                     <G 
                         transform={`rotate(${this.state.degrees}, 0, 0)`}>
                         {this.state.items.map((element, index) =>
                             <G 
                                 key={index}>
                                 <Path
-                                    d={this.describeArc(0, 0, (this.state.screenWidth / 2) - 5, element.startDegree, element.endDegree)} fill={element.color}
+                                    d={this.describeArc(0, 0, (this.state.screenWidth / 2) - 5, element.startDegree, element.endDegree)} 
+                                    fill={element.color}
                                     stroke="black"
                                     strokeWidth="2.5"
                                 ></Path>

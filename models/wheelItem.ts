@@ -3,4 +3,5 @@ export interface WheelItem {
     name: string;
     weight: number;
     color: string | null;
+    customColor: boolean;
 }

@@ -1,6 +1,7 @@
 import React from 'react';
-import {FlatList, Text, View, TouchableOpacity} from 'react-native';
-import {NavigationScreenProps} from 'react-navigation';
+import {FlatList, Text, View, ScrollView, TouchableOpacity} from 'react-native';
+import {NavigationScreenProps, NavigationEvents} from 'react-navigation';
+import { DeviceStorage } from '../components/deviceStorage';
 import { Wheel } from '../models/wheel';
 
 interface HomeState {
@@ -16,146 +17,80 @@ export class HomeScreen extends React.Component<NavigationScreenProps, HomeState
         super(props);
 
         this.state = {
-            wheels: [
-                {
-                    name: 'Test Wheel 1',
-                    items: [
-                        {
-                            id: '',
-                            name: 'Skyline',
-                            weight: 1,
-                            color: ''
-                        }, {
-                            id: '',
-                            name: 'Chipotle',
-                            weight: 1,
-                            color: ''
-                        }, {
-                            id: '',
-                            name: 'Basil Thai',
-                            weight: 1,
-                            color: ''
-                        }, {
-                            id: '',
-                            name: 'Smashburger',
-                            weight: 1,
-                            color: ''
-                        }, {
-                            id: '',
-                            name: 'Dibella\'s',
-                            weight: 1,
-                            color: ''
-                        }, {
-                            id: '',
-                            name: 'Buffalo Wild Wings',
-                            weight: 1,
-                            color: ''
-                        }
-                    ]
-                }, {
-                    name: 'Test Wheel 2',
-                    items: [
-                        {
-                            id: '',
-                            name: 'Skyline',
-                            weight: 2,
-                            color: 'red'
-                        }, {
-                            id: '',
-                            name: 'Chipotle',
-                            weight: 1,
-                            color: 'blue'
-                        }, {
-                            id: '',
-                            name: 'Basil Thai',
-                            weight: 2,
-                            color: 'green'
-                        }, {
-                            id: '',
-                            name: 'Smashburger',
-                            weight: 1,
-                            color: 'grey'
-                        }, {
-                            id: '',
-                            name: 'Dibella\'s',
-                            weight: 2,
-                            color: 'white'
-                        }, {
-                            id: '',
-                            name: 'Buffalo Wild Wings',
-                            weight: 1,
-                            color: 'yellow'
-                        }
-                    ]
-                }, {
-                    name: 'Big Wheel',
-                    items: [
-                        { id: '', color: '', name: "Basil Thai", weight: 4 },
-                        { id: '', color: '', name: "Skyline", weight: 5 },
-                        { id: '', color: '', name: "Qdoba", weight: 3 },
-                        { id: '', color: '', name: "Mio's", weight: 5 },
-                        { id: '', color: '', name: "El Vaquero", weight: 2 },
-                        { id: '', color: '', name: "Dibella's", weight: 3 },
-                        { id: '', color: '', name: "Brickhouse", weight: 1 },
-                        { id: '', color: '', name: "Buffalo Wild Wings", weight: 2 },
-                        { id: '', color: '', name: "Chipolte", weight: 2 },
-                        { id: '', color: '', name: "City Barbecue", weight: 3 },
-                        { id: '', color: '', name: "DeSha's", weight: 1 },
-                        { id: '', color: '', name: "Silver Spring House", weight: 1 },
-                        { id: '', color: '', name: "Penn Station", weight: 1 },
-                        { id: '', color: '', name: "Slatts", weight: 2 },
-                        { id: '', color: '', name: "Montgomery Towne Tavern", weight: 5 },
-                        { id: '', color: '', name: "Firehouse", weight: 1 },
-                        { id: '', color: '', name: "Marion's", weight: 2 },
-                        { id: '', color: '', name: "LaRosa's", weight: 1 },
-                        { id: '', color: '', name: "Envision", weight: 1 },
-                        { id: '', color: '', name: "Korea House", weight: 1 },
-                        { id: '', color: '', name: "Dolsot", weight: 1 },
-                        { id: '', color: '', name: "Blue Goose", weight: 4 }
-                    ]
-                }, {
-                    name: 'Demo Wheel',
-                    items: [
-                        {id: '', color: '', weight: 1, name: 'Basil Thai'},
-                        {id: '', color: '', weight: 1, name: 'Mio\'s'},
-                        {id: '', color: '', weight: 1, name: 'Dibella\'s'},
-                        {id: '', color: '', weight: 1, name: 'Qdoba'},
-                        {id: '', color: '', weight: 3, name: 'Buffalo Wild Wings'},
-                        {id: '', color: '', weight: 2, name: 'Montgomery Towne Tavern'},
-                        {id: '', color: '', weight: 1, name: 'City Barbeque'},
-                        {id: '', color: '', weight: 2, name: 'Blue Goose'}
-                    ]
-                }
-            ]
+            wheels: []
         };
+    }
+
+    async componentWillMount() {
+        await this.loadWheels();
+    }
+
+    async componentWillReceiveProps() {
+        await this.loadWheels();
+    }
+
+    async componentWillFocus() {
+        await this.loadWheels();
+    }
+
+    async loadWheels() {
+        const wheels = await DeviceStorage.loadAllWheels();
+        if (wheels != null) {
+            this.setState({
+                ...this.state,
+                wheels: wheels
+            });
+        }
     }
 
     render() {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <FlatList
-                    style={{marginTop: 10}}
-                    data={this.state.wheels}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={(i: any) => 
-                        
-                        <TouchableOpacity 
-                            style={{ 
-                                width: 300, 
-                                height: 50, 
-                                backgroundColor: 'white', 
-                                justifyContent: 'center', 
-                                alignItems: 'center', 
-                                marginBottom: 10,
-                                borderRadius: 25,
-                                borderColor: 'black',
-                                borderWidth: 5
-                            }}
-                            onPress={() => {this.props.navigation.navigate('Wheel', {wheel: i.item})}}>
-                            <Text>{i.item.name}</Text>
-                        </TouchableOpacity>}
+            <ScrollView>
+                <NavigationEvents
+                  onWillFocus={() => {
+                    this.loadWheels();
+                  }}
                 />
-            </View>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <FlatList
+                        style={{marginTop: 10}}
+                        data={this.state.wheels}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={(i: any) => 
+                            
+                            <TouchableOpacity 
+                                style={{ 
+                                    width: 300, 
+                                    height: 50, 
+                                    backgroundColor: 'white', 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    marginBottom: 10,
+                                    borderRadius: 25,
+                                    borderColor: 'black',
+                                    borderWidth: 5
+                                }}
+                                onPress={() => {this.props.navigation.navigate('Wheel', {wheel: i.item})}}>
+                                <Text>{i.item.name}</Text>
+                            </TouchableOpacity>}
+                        
+                    />
+                    <TouchableOpacity 
+                                style={{ 
+                                    width: 300, 
+                                    height: 50, 
+                                    backgroundColor: 'white', 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    borderRadius: 25,
+                                    borderColor: 'black',
+                                    borderWidth: 5
+                                }}
+                                onPress={() => {this.props.navigation.navigate('CreateWheel', {})}}>
+                                <Text>Add Wheel</Text>
+                            </TouchableOpacity>
+                </View>
+            </ScrollView>
         );
     }
 }

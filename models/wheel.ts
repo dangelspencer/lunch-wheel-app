@@ -1,6 +1,7 @@
 import {WheelItem} from './wheelItem';
 
 export interface Wheel {
-    name: string;
+    id: String;
+    name: String;
     items: WheelItem[];
 }

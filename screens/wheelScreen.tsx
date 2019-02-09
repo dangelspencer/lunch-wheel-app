@@ -4,11 +4,13 @@ import {FlatList, Modal, ScrollView, Text, TouchableHighlight, TouchableOpacity,
 import {NavigationScreenProps} from "react-navigation";
 import {Wheel as IWheel} from '../models/wheel';
 import {Wheel} from '../components/wheel';
+import { ItemEditScreen } from './itemEdit';
+import { WheelItem } from '../models/wheelItem';
+import { DeviceStorage } from '../components/deviceStorage';
 
 interface WheelScreenState {
     screeWidth: number;
     wheel: IWheel;
-    addingItem: boolean;
 }
 
 export class WheelScreen extends React.Component<NavigationScreenProps, WheelScreenState> {
@@ -19,24 +21,15 @@ export class WheelScreen extends React.Component<NavigationScreenProps, WheelScr
 
         const wheel = props.navigation.getParam('wheel');
 
-        const itemsWithoutColors = _.filter(wheel.items, item => {
-            return item.color == null || item.color === '';
-        });
-
-        const numItemsWithoutColors = itemsWithoutColors.length;
-        let currentItemWithoutColor = 0;
-
         _.each(wheel.items, item => {
-            if (item.color === '') {
-                item.color = this.getColor(currentItemWithoutColor, numItemsWithoutColors);
-                currentItemWithoutColor++;
+            if (item.color === '' || !item.customColor) {
+                item.color = this.getColor(wheel.items.indexOf(item), wheel.items.length);
             }
         });
 
         this.state = {
             screeWidth: 0, 
-            wheel: props.navigation.getParam('wheel'),
-            addingItem: false
+            wheel: props.navigation.getParam('wheel')
         };
     }
 
@@ -45,6 +38,22 @@ export class WheelScreen extends React.Component<NavigationScreenProps, WheelScr
     };
 
 
+    componentWillReceiveProps(nextProps: NavigationScreenProps) {
+        const wheel = nextProps.navigation.getParam('wheel');
+
+        if (wheel.items.length > 0) {
+            _.each(wheel.items, item => {
+                if (item.color === '' || !item.customColor) {
+                    item.color = this.getColor(wheel.items.indexOf(item), wheel.items.length);
+                }
+            });
+        }
+
+        this.setState({
+            ...this.state,
+            wheel: wheel,
+        });
+    }
 
     byte2Hex(n: number) {
         var nybHexString = "0123456789ABCDEF";
@@ -73,13 +82,6 @@ export class WheelScreen extends React.Component<NavigationScreenProps, WheelScr
         this.setState({screeWidth: width > height ? height : width});
     }
 
-    toggleModalVisibility(addingItem: boolean) {
-        this.setState({
-            ...this.state,
-            addingItem: addingItem
-        });
-    }
-
     render() {
         if (this.state.screeWidth > 0) {
             return (
@@ -87,14 +89,28 @@ export class WheelScreen extends React.Component<NavigationScreenProps, WheelScr
                     <View style={{ flex: 1, alignItems: 'center' }}>
                         <Text style={{fontSize: 22, fontWeight: 'bold', marginTop: 10}}>{this.state.wheel.name}</Text>
                         <Text style={{fontSize: 15, paddingBottom: '5%'}}>{this.state.wheel.items.length} Items</Text>
-                        <Wheel items={this.state.wheel.items} screenWidth={this.state.screeWidth}></Wheel>
+                        {
+                            this.state.wheel.items.length > 0 ? 
+                                <>
+                                    <Wheel items={this.state.wheel.items} screenWidth={this.state.screeWidth}></Wheel> 
+                                    <Text style={{fontSize: 22, fontWeight: 'bold', marginTop: 10}}>Items</Text>
+                                </>
+                            : 
+                                <></>
+                        }
+
+                        
                         <FlatList
                         style={{marginTop: 20}}
                         data={this.state.wheel.items}
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={(i: any) => 
                             
-                            <View 
+                            <TouchableOpacity 
+                                onPress={() => {this.props.navigation.navigate('EditItem', {
+                                    wheel: this.state.wheel,
+                                    index: i.index
+                                })}}
                                 style={{ 
                                     width: this.state.screeWidth - 50, 
                                     height: 50, 
@@ -107,8 +123,45 @@ export class WheelScreen extends React.Component<NavigationScreenProps, WheelScr
                                     borderWidth: 5
                                 }}>
                                 <Text style={{fontSize: 18, color: 'black'}}>{i.item.name}</Text>
-                            </View>}
+                            </TouchableOpacity>}
                         />
+                        <TouchableOpacity 
+                            onPress={() => {this.props.navigation.navigate('EditItem', {
+                                wheel: this.state.wheel,
+                                index: this.state.wheel.items.length
+                            })}}
+                            style={{ 
+                                width: this.state.screeWidth - 50, 
+                                height: 50, 
+                                backgroundColor: 'white', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                marginBottom: 10,
+                                borderRadius: 25,
+                                borderColor: 'black',
+                                borderWidth: 5
+                            }}>
+                            <Text style={{fontSize: 18, color: 'black'}}>Add Item</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            onPress={() => {
+                                DeviceStorage.deleteWheel(this.state.wheel.id).then(() => {
+                                    this.props.navigation.goBack();
+                                });
+                            }}
+                            style={{ 
+                                width: this.state.screeWidth - 50, 
+                                height: 50, 
+                                backgroundColor: 'red', 
+                                justifyContent: 'center', 
+                                alignItems: 'center', 
+                                marginBottom: 10,
+                                borderRadius: 25,
+                                borderColor: 'black',
+                                borderWidth: 5
+                            }}>
+                            <Text style={{fontSize: 18, color: 'black'}}>Delete</Text>
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
             );
