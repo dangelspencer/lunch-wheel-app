@@ -21,7 +21,8 @@
             "**/*"
         ],
         "ios": {
-            "supportsTablet": true
+            "supportsTablet": true,
+            "bundleIdentifier": "com.spencerdangel.lunchwheel"
         },
         "android": {
             "package": "com.spencerdangel.lunchwheel"
