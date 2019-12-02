@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator, createSwitchNavigator} from 'react-navigation';
+import {createStackNavigator} from 'react-navigation-stack';
 import {CreateWheelScreen} from '../screens/createWheelScreen';
 import {ItemEditScreen} from '../screens/itemEdit';
 import {HomeScreen} from "../screens/homeScreen";
